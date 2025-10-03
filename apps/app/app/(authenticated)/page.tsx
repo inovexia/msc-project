@@ -1,18 +1,18 @@
-import { env } from '@/env';
-import { auth } from '@repo/auth/server';
-import { database } from '@repo/database';
-import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import { notFound } from 'next/navigation';
-import { AvatarStack } from './components/avatar-stack';
-import { Cursors } from './components/cursors';
-import { Header } from './components/header';
+import { env } from "@/env";
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+import { notFound } from "next/navigation";
+import { AvatarStack } from "./components/avatar-stack";
+import { Cursors } from "./components/cursors";
+import { Header } from "./components/header";
 
-const title = 'Acme Inc';
-const description = 'My application.';
+const title = "Acme Inc";
+const description = "My application.";
 
 const CollaborationProvider = dynamic(() =>
-  import('./components/collaboration-provider').then(
+  import("./components/collaboration-provider").then(
     (mod) => mod.CollaborationProvider
   )
 );
@@ -23,35 +23,51 @@ export const metadata: Metadata = {
 };
 
 const App = async () => {
-  const pages = await database.page.findMany();
-  const { orgId } = await auth();
+  try {
+    const pages = await database.page.findMany();
+    const { orgId } = await auth();
 
-  if (!orgId) {
-    notFound();
-  }
+    if (!orgId) {
+      notFound();
+    }
 
-  return (
-    <>
-      <Header pages={['Building Your Application']} page="Data Fetching">
-        {env.LIVEBLOCKS_SECRET && (
-          <CollaborationProvider orgId={orgId}>
-            <AvatarStack />
-            <Cursors />
-          </CollaborationProvider>
-        )}
-      </Header>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          {pages.map((page) => (
-            <div key={page.id} className="aspect-video rounded-xl bg-muted/50">
-              {page.name}
-            </div>
-          ))}
+    return (
+      <>
+        <Header pages={["Building Your Application"]} page="Data Fetching">
+          {env.LIVEBLOCKS_SECRET && (
+            <CollaborationProvider orgId={orgId}>
+              <AvatarStack />
+              <Cursors />
+            </CollaborationProvider>
+          )}
+        </Header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            {pages.map((page) => (
+              <div
+                key={page.id}
+                className="aspect-video rounded-xl bg-muted/50"
+              >
+                {page.name}
+              </div>
+            ))}
+          </div>
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
         </div>
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-      </div>
-    </>
-  );
+      </>
+    );
+  } catch (error) {
+    console.error("Error in authenticated page:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : "Unknown",
+      cause: error instanceof Error ? error.cause : undefined,
+      toString: String(error),
+    });
+
+    // Re-throw to trigger error boundary
+    throw error;
+  }
 };
 
 export default App;
