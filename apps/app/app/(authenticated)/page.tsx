@@ -1,73 +1,37 @@
-import { env } from "@/env";
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import type { Metadata } from "next";
-import dynamic from "next/dynamic";
-import { notFound } from "next/navigation";
-import { AvatarStack } from "./components/avatar-stack";
-import { Cursors } from "./components/cursors";
-import { Header } from "./components/header";
+import { useUser } from "@repo/auth/client";
+import { Button } from "@repo/design-system/components/ui/button";
 
-const title = "Acme Inc";
-const description = "My application.";
+import { auth } from "@clerk/nextjs/server";
+export default async function AuthenticatedPage() {
+  const { has } = await auth();
+  // const { user } = useUser();
+  // const isClient = user?.organizationMemberships?.some(
+  //   (membership) => membership.role === "clients"
+  // );
 
-const CollaborationProvider = dynamic(() =>
-  import("./components/collaboration-provider").then(
-    (mod) => mod.CollaborationProvider
-  )
-);
+  const isClient = has({ role: "clients" });
+  // const router = useRouter();
+  // const handleClick = () => {
+  //   router.push("/upload");
+  // };
 
-export const metadata: Metadata = {
-  title,
-  description,
-};
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
 
-const App = async () => {
-  try {
-    const pages = await database.page.findMany();
-    const { orgId } = await auth();
-
-    if (!orgId) {
-      notFound();
-    }
-
-    return (
-      <>
-        <Header pages={["Building Your Application"]} page="Data Fetching">
-          {env.LIVEBLOCKS_SECRET && (
-            <CollaborationProvider orgId={orgId}>
-              <AvatarStack />
-              <Cursors />
-            </CollaborationProvider>
-          )}
-        </Header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            {pages.map((page) => (
-              <div
-                key={page.id}
-                className="aspect-video rounded-xl bg-muted/50"
-              >
-                {page.name}
-              </div>
-            ))}
+      {isClient && (
+        <>
+          <div className="mt-4 p-4 bg-blue-100 text-blue-800 rounded">
+            You have client access.
           </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-        </div>
-      </>
-    );
-  } catch (error) {
-    console.error("Error in authenticated page:", {
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : "Unknown",
-      cause: error instanceof Error ? error.cause : undefined,
-      toString: String(error),
-    });
 
-    // Re-throw to trigger error boundary
-    throw error;
-  }
-};
+          <Button className="mt-4">Upload docs</Button>
+        </>
+      )}
 
-export default App;
+      <div className="mt-8">
+        <p>Welcome to the authenticated area!</p>
+      </div>
+    </div>
+  );
+}

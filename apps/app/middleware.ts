@@ -1,19 +1,21 @@
-import { authMiddleware } from '@repo/auth/middleware';
 import {
   noseconeMiddleware,
   noseconeOptions,
   noseconeOptionsWithToolbar,
 } from '@repo/security/middleware';
-import type { NextMiddleware } from 'next/server';
+import type { NextMiddleware, NextRequest } from 'next/server';
 import { env } from './env';
+
+// Import clerkMiddleware directly from @clerk/nextjs/server for Clerk detection
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
 const securityHeaders = env.FLAGS_SECRET
   ? noseconeMiddleware(noseconeOptionsWithToolbar)
   : noseconeMiddleware(noseconeOptions);
 
-export default authMiddleware(() =>
-  securityHeaders()
-) as unknown as NextMiddleware;
+export default clerkMiddleware(async (auth, request: NextRequest) => {
+  return securityHeaders();
+}) as unknown as NextMiddleware;
 
 export const config = {
   matcher: [

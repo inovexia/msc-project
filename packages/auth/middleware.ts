@@ -1,1 +1,1 @@
-export { clerkMiddleware as authMiddleware } from '@clerk/nextjs/server';
+export { clerkMiddleware, clerkMiddleware as authMiddleware } from '@clerk/nextjs/server';
