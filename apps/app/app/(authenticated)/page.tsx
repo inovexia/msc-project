@@ -1,6 +1,6 @@
 import { useUser } from "@repo/auth/client";
 import { Button } from "@repo/design-system/components/ui/button";
-
+import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 export default async function AuthenticatedPage() {
   const { has } = await auth();
@@ -25,7 +25,11 @@ export default async function AuthenticatedPage() {
             You have client access.
           </div>
 
-          <Button className="mt-4">Upload docs</Button>
+          <Link href="/upload">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded">
+              Upload Documents
+            </button>
+          </Link>
         </>
       )}
 
