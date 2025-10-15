@@ -7,8 +7,14 @@ export async function bootstrapPortal(token: string): Promise<MagicLinkBootstrap
   return r.json();
 }
 
+export async function getPeriodDetails(periodId: UUID): Promise<MagicLinkBootstrap> {
+  const r = await fetch(`/api/periods/${encodeURIComponent(periodId)}`, { cache: 'no-store' });
+  if (!r.ok) throw new Error('getPeriodDetails failed');
+  return r.json();
+}
+
 export async function listDocuments(periodId: UUID): Promise<Document[]> {
-  const r = await fetch(`/api/mock/documents?periodId=${encodeURIComponent(periodId)}`, { cache: 'no-store' });
+  const r = await fetch(`/api/documents?periodId=${encodeURIComponent(periodId)}`, { cache: 'no-store' });
   if (!r.ok) throw new Error('listDocuments failed');
   return r.json();
 }
@@ -33,7 +39,7 @@ export async function confirmUpload(payload: {
 }
 
 export async function assignDocument(documentId: UUID, requestId: UUID | null): Promise<{ ok: true }> {
-  const r = await fetch('/api/mock/documents', {
+  const r = await fetch('/api/documents', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ documentId, requestId }),
@@ -43,7 +49,7 @@ export async function assignDocument(documentId: UUID, requestId: UUID | null): 
 }
 
 export async function listPeriods(): Promise<any[]> {
-  const r = await fetch('/api/mock/periods', { cache: 'no-store' });
+  const r = await fetch('/api/periods', { cache: 'no-store' });
   if (!r.ok) throw new Error('listPeriods failed');
   return r.json();
 }

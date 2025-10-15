@@ -19,7 +19,7 @@ export default async function AuthenticatedPage() {
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
 
-      {isClient && (
+      {isClient ? (
         <>
           <div className="mt-4 p-4 bg-blue-100 text-blue-800 rounded">
             You have client access.
@@ -31,6 +31,15 @@ export default async function AuthenticatedPage() {
             </button>
           </Link>
         </>
+      ) : (
+        <div className="mt-4 p-4 bg-red-100 text-red-800 rounded">
+          You have accountant access.
+          <Link href="/clients">
+            <button className="px-4 py-2 bg-blue-500 text-white rounded">
+              View clients
+            </button>
+          </Link>
+        </div>
       )}
 
       <div className="mt-8">

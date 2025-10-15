@@ -4,6 +4,19 @@ import { Document } from "@/lib/types";
 import { Badge } from "@repo/design-system/components/ui/badge";
 
 export function FileViewer({ doc }: { doc: Document | null }) {
+  const [fileUrl, setFileUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!doc) return setFileUrl(null);
+    (async () => {
+      const res = await fetch(`/api/file/${doc.id}/view`);
+      if (res.ok) {
+        const data = await res.json();
+        setFileUrl(data.url);
+      }
+    })();
+  }, [doc]);
+
   if (!doc) {
     return (
       <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
@@ -11,9 +24,11 @@ export function FileViewer({ doc }: { doc: Document | null }) {
       </div>
     );
   }
+
   const canInline =
     doc.contentType?.startsWith("image/") ||
     doc.contentType === "application/pdf";
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between border-b p-3">
@@ -26,40 +41,13 @@ export function FileViewer({ doc }: { doc: Document | null }) {
         <Badge>{doc.status}</Badge>
       </div>
       <div className="flex-1 overflow-auto p-3">
-        {canInline ? (
-          <div className="rounded-md border overflow-hidden">
-            <iframe
-              src={doc.fileKey?.startsWith("http") ? doc.fileKey : undefined}
-              title="preview"
-              className="w-full h-[60vh]"
-            />
-          </div>
+        {canInline && fileUrl ? (
+          <iframe src={fileUrl} title="preview" className="w-full h-[60vh]" />
         ) : (
           <div className="text-sm text-muted-foreground">
             No preview. Download to view.
           </div>
         )}
-        <div className="mt-4 space-y-2">
-          <div className="text-sm font-medium">Extracted</div>
-          <dl className="grid grid-cols-3 gap-2 text-sm">
-            <div>
-              <dt className="text-muted-foreground">Vendor</dt>
-              <dd>{doc.extracted?.vendor ?? "-"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Date</dt>
-              <dd>{doc.extracted?.date ?? "-"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Amount</dt>
-              <dd>
-                {typeof doc.extracted?.amount === "number"
-                  ? doc.extracted?.amount.toFixed(2)
-                  : "-"}
-              </dd>
-            </div>
-          </dl>
-        </div>
       </div>
     </div>
   );

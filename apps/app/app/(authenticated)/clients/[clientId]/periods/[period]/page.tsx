@@ -1,10 +1,10 @@
-'use client';
-import * as React from 'react';
-import { useParams } from 'next/navigation';
-import { bootstrapPortal, listDocuments, assignDocument } from '@/lib/api'; // reuse bootstrap for mock data by tokenless path
-import { Document, PeriodRequest } from '@/lib/types';
-import { DocumentTable } from '@/components/workspace/DocumentTable';
-import { FileViewer } from '@/components/workspace/FileViewer';
+"use client";
+import * as React from "react";
+import { useParams } from "next/navigation";
+import { getPeriodDetails, listDocuments, assignDocument } from "@/lib/api";
+import { Document, PeriodRequest } from "@/lib/types";
+import { DocumentTable } from "app/(authenticated)/components/workspace/DocumentTable";
+import { FileViewer } from "app/(authenticated)/components/workspace/FileViewer";
 
 export default function PeriodWorkspacePage() {
   const params = useParams<{ clientId: string; period: string }>();
@@ -14,13 +14,18 @@ export default function PeriodWorkspacePage() {
   const [selectedDocId, setSelectedDocId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    // Use the mock bootstrap without token to produce the same period
+    if (!params.period) return;
+
     (async () => {
-      const boot = await fetch('/api/mock/bootstrap?forceDemo=1').then(r => r.json());
-      setRequests(boot.requests);
-      setPeriodId(boot.period.id);
-      const ds = await listDocuments(boot.period.id);
-      setDocs(ds);
+      try {
+        // Get period details and documents from real API
+        const periodData = await getPeriodDetails(params.period);
+        setRequests(periodData.requests);
+        setPeriodId(periodData.period.id);
+        setDocs(periodData.documents);
+      } catch (error) {
+        console.error("Failed to fetch period data:", error);
+      }
     })();
   }, [params.clientId, params.period]);
 
@@ -41,7 +46,7 @@ export default function PeriodWorkspacePage() {
     }
   };
 
-  const selected = docs.find(d => d.id === selectedDocId) || null;
+  const selected = docs.find((d) => d.id === selectedDocId) || null;
 
   return (
     <div className="h-[calc(100vh-4rem)]">
