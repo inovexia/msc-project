@@ -30,62 +30,62 @@ model User {
   role      Role
   createdAt DateTime @default(now())
 
-  firm           Firm       @relation(fields: [firmId], references: [id])
-  uploadedDocs   Document[] @relation("UploadedDocuments")
+  firm         Firm       @relation(fields: [firmId], references: [id])
+  uploadedDocs Document[] @relation("UploadedDocuments")
 }
 
 model Client {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   firmId    String
   name      String
-  createdAt DateTime  @default(now())
+  createdAt DateTime   @default(now())
   periods   Period[]
   documents Document[]
-  firm      Firm      @relation(fields: [firmId], references: [id])
+  firm      Firm       @relation(fields: [firmId], references: [id])
 }
 
 model Period {
-  id                String            @id @default(cuid())
-  clientId          String
-  year              Int
-  month             Int
-  status            PeriodStatus
-  dueDate           DateTime?
-  createdAt         DateTime          @default(now())
-  client            Client            @relation(fields: [clientId], references: [id])
-  documentRequests  DocumentRequest[]
-  documents         Document[]
+  id               String            @id @default(cuid())
+  clientId         String
+  year             Int
+  month            Int
+  status           PeriodStatus
+  dueDate          DateTime?
+  createdAt        DateTime          @default(now())
+  client           Client            @relation(fields: [clientId], references: [id])
+  documentRequests DocumentRequest[]
+  documents        Document[]
 }
 
 model DocumentRequest {
-  id           String               @id @default(cuid())
-  periodId     String
-  title        String
-  description  String?
-  status       DocumentStatus
-  createdAt    DateTime             @default(now())
-  period       Period               @relation(fields: [periodId], references: [id])
-  documents    Document[]
+  id          String         @id @default(cuid())
+  periodId    String
+  title       String
+  description String?
+  status      DocumentStatus
+  createdAt   DateTime       @default(now())
+  period      Period         @relation(fields: [periodId], references: [id])
+  documents   Document[]
 }
 
 model Document {
-  id                  String   @id @default(cuid())
-  firmId              String
-  clientId            String
-  periodId            String
-  documentRequestId   String
-  uploadedByUserId    String
-  fileName            String
-  fileType            String
-  fileSize            Int
-  storagePath         String
-  createdAt           DateTime @default(now())
+  id                String   @id @default(cuid())
+  firmId            String
+  clientId          String
+  periodId          String
+  documentRequestId String
+  uploadedByUserId  String
+  fileName          String
+  fileType          String
+  fileSize          Int
+  storagePath       String
+  createdAt         DateTime @default(now())
 
-  firm              Firm            @relation(fields: [firmId], references: [id])
-  client            Client          @relation(fields: [clientId], references: [id])
-  period            Period          @relation(fields: [periodId], references: [id])
-  documentRequest   DocumentRequest @relation(fields: [documentRequestId], references: [id])
-  uploadedByUser    User            @relation("UploadedDocuments", fields: [uploadedByUserId], references: [id])
+  firm            Firm            @relation(fields: [firmId], references: [id])
+  client          Client          @relation(fields: [clientId], references: [id])
+  period          Period          @relation(fields: [periodId], references: [id])
+  documentRequest DocumentRequest @relation(fields: [documentRequestId], references: [id])
+  uploadedByUser  User            @relation("UploadedDocuments", fields: [uploadedByUserId], references: [id])
 }
 
 enum Role {

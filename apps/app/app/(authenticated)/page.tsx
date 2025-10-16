@@ -1,7 +1,7 @@
 import { useUser } from "@repo/auth/client";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@repo/auth/server";
 export default async function AuthenticatedPage() {
   const { has } = await auth();
   // const { user } = useUser();
@@ -21,24 +21,13 @@ export default async function AuthenticatedPage() {
 
       {isClient ? (
         <>
-          <div className="mt-4 p-4 bg-blue-100 text-blue-800 rounded">
+          <div className="mt-4 p-4  text-white rounded">
             You have client access.
           </div>
-
-          <Link href="/upload">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded">
-              Upload Documents
-            </button>
-          </Link>
         </>
       ) : (
-        <div className="mt-4 p-4 bg-red-100 text-red-800 rounded">
+        <div className="mt-4 p-4 text-white rounded">
           You have accountant access.
-          <Link href="/clients">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded">
-              View clients
-            </button>
-          </Link>
         </div>
       )}
 
