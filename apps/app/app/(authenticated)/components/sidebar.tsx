@@ -19,7 +19,7 @@ const clientMenuItems = [
 
 const accountantMenuItems = [
   { href: "/", title: "Dashboard", icon: "LayoutDashboard" },
-  { href: "/clients", title: "Clients", icon: "Users" },
+  { href: "/accountants/dashboard", title: "Clients", icon: "Users" },
   { href: "/upload", title: "Documents", icon: "Files" },
   { href: "/reports", title: "Reports", icon: "BarChart2" },
   { href: "/settings", title: "Settings", icon: "Settings" },
