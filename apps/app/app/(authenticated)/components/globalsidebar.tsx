@@ -10,16 +10,20 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
 } from "@repo/design-system/components/ui/sidebar";
 import { NotificationsTrigger } from "@repo/notifications/components/trigger";
 // 1. Import all the icons you'll need from lucide-react.
 import {
   BarChart2,
+  Calendar,
   Files,
   LayoutDashboard,
+  Search,
   Settings,
   Users,
+  Webhook,
   type LucideProps,
 } from "lucide-react";
 import Link from "next/link";
@@ -28,8 +32,11 @@ import type { ComponentType, ReactNode } from "react";
 // 2. Create a map of string names to the actual icon components.
 const iconMap: Record<string, ComponentType<LucideProps>> = {
   LayoutDashboard,
+  Calendar,
   Files,
   BarChart2,
+  Search,
+  Webhook,
   Users,
   Settings,
 };
@@ -91,11 +98,13 @@ export const GlobalSidebarUI = ({
               const IconComponent = iconMap[item.icon];
               return (
                 <SidebarMenuItem key={item.href}>
-                  <Link href={item.href} className="flex items-center gap-2">
-                    {/* Render the dynamically selected icon component */}
-                    {IconComponent && <IconComponent className="h-4 w-4" />}
-                    <span>{item.title}</span>
-                  </Link>
+                  <SidebarMenuButton asChild>
+                    <Link href={item.href}>
+                      {/* Render the dynamically selected icon component */}
+                      {IconComponent && <IconComponent />}
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               );
             })}
