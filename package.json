@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev --filter=!docs --filter=!@repo/cms",
+    "dev": "turbo dev --filter=!docs --filter=!@repo/cms --filter=!email",
     "lint": "ultracite lint",
     "format": "ultracite format",
     "test": "turbo test",

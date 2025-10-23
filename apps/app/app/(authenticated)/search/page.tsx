@@ -22,13 +22,6 @@ export const generateMetadata = async ({
 
 const SearchPage = async ({ searchParams }: SearchPageProperties) => {
   const { q } = await searchParams;
-  const pages = await database.page.findMany({
-    where: {
-      name: {
-        contains: q,
-      },
-    },
-  });
   const { orgId } = await auth();
 
   if (!orgId) {
@@ -39,18 +32,47 @@ const SearchPage = async ({ searchParams }: SearchPageProperties) => {
     redirect('/');
   }
 
+  const documents = await database.document.findMany({
+    where: {
+      fileName: {
+        contains: q,
+        mode: 'insensitive',
+      },
+    },
+    include: {
+      client: true,
+    },
+    take: 20,
+  });
+
   return (
     <>
-      <Header pages={['Building Your Application']} page="Search" />
+      <Header pages={['Search']} page="Search Results" />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold">Search Results for "{q}"</h1>
+          <p className="text-sm text-muted-foreground">
+            Found {documents.length} document{documents.length !== 1 ? 's' : ''}
+          </p>
+        </div>
         <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          {pages.map((page) => (
-            <div key={page.id} className="aspect-video rounded-xl bg-muted/50">
-              {page.name}
+          {documents.map((doc) => (
+            <div key={doc.id} className="rounded-xl border bg-card p-4 shadow-sm">
+              <div className="font-medium truncate">{doc.fileName}</div>
+              <div className="text-sm text-muted-foreground mt-1">
+                Client: {doc.client?.name || 'Unknown'}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {new Date(doc.uploadedAt).toLocaleDateString()}
+              </div>
             </div>
           ))}
         </div>
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        {documents.length === 0 && (
+          <div className="flex items-center justify-center min-h-[200px] rounded-xl bg-muted/50">
+            <p className="text-muted-foreground">No documents found matching "{q}"</p>
+          </div>
+        )}
       </div>
     </>
   );
