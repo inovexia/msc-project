@@ -5,7 +5,9 @@ import { listPeriods } from "@/lib/api";
 import { mockPeriods } from "@/lib/mock-periods";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { RefreshCw, Database, Beaker } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import { RefreshCw, Database, Beaker, AlertCircle, CheckCircle, Clock, ExternalLink, Mail } from "lucide-react";
+import { RequestDocumentsDialog } from "@/app/(authenticated)/accountants/dashboard/components/request-documents-dialog";
 import Link from "next/link";
 
 export default function ClientsDashboardPage() {
@@ -36,15 +38,66 @@ export default function ClientsDashboardPage() {
     }
   }, [dataMode, fetchLiveData]);
 
+  const [filterStatus, setFilterStatus] = React.useState<"all" | "open" | "in_review" | "closed">("all");
+
   const displayPeriods = dataMode === "mock" ? mockPeriods : periods;
 
+  // Filter periods based on selected filter
+  const filteredPeriods = React.useMemo(() => {
+    if (filterStatus === "all") return displayPeriods;
+    return displayPeriods.filter((p) => p.status === filterStatus);
+  }, [displayPeriods, filterStatus]);
+
+  // Get periods that need attention (open and incomplete)
+  const needsAttentionPeriods = React.useMemo(() => {
+    return displayPeriods.filter(
+      (p) => p.status === "open" && p.received < p.required
+    );
+  }, [displayPeriods]);
+
+  const handleDocumentRequest = async (
+    periodId: string,
+    clientId: string,
+    clientName: string,
+    requestList: Array<{ title: string; category: string; required: boolean }>,
+    message: string
+  ) => {
+    if (dataMode === "mock") {
+      alert(
+        `Document request sent to ${clientName}\n\nRequested:\n${requestList.map((r) => `- ${r.title}`).join("\n")}`
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/document-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          periodId,
+          clientId,
+          requests: requestList,
+          message,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to send request");
+
+      alert(`Document request sent successfully to ${clientName}`);
+      fetchLiveData();
+    } catch (err) {
+      console.error("Failed to send document request:", err);
+      alert("Failed to send document request. Please try again.");
+    }
+  };
+
   return (
-    <div className="container max-w-6xl py-8 px-6 md:px-8">
+    <div className="container max-w-7xl py-8 px-6 md:px-8">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Client Periods</h1>
+          <h1 className="text-2xl font-semibold">Document Collections</h1>
           <p className="text-sm text-muted-foreground">
-            Select a period to view and manage uploaded documents.
+            Track and manage monthly document submissions from your clients.
           </p>
         </div>
 
@@ -94,6 +147,138 @@ export default function ClientsDashboardPage() {
         </div>
       )}
 
+      {/* Filter Buttons */}
+      <div className="mb-6 flex items-center gap-2">
+        <span className="text-sm text-muted-foreground mr-2">Show:</span>
+        <Button
+          variant={filterStatus === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilterStatus("all")}
+        >
+          All ({displayPeriods.length})
+        </Button>
+        <Button
+          variant={filterStatus === "open" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilterStatus("open")}
+          className="gap-2"
+        >
+          <Clock className="h-4 w-4" />
+          Open ({displayPeriods.filter((p) => p.status === "open").length})
+        </Button>
+        <Button
+          variant={filterStatus === "in_review" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilterStatus("in_review")}
+          className="gap-2"
+        >
+          <AlertCircle className="h-4 w-4" />
+          In Review ({displayPeriods.filter((p) => p.status === "in_review").length})
+        </Button>
+        <Button
+          variant={filterStatus === "closed" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilterStatus("closed")}
+          className="gap-2"
+        >
+          <CheckCircle className="h-4 w-4" />
+          Closed ({displayPeriods.filter((p) => p.status === "closed").length})
+        </Button>
+      </div>
+
+      {/* Needs Attention Section */}
+      {needsAttentionPeriods.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="h-5 w-5 text-orange-600" />
+            <h2 className="text-lg font-semibold">Needs Attention</h2>
+            <Badge variant="destructive">{needsAttentionPeriods.length}</Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {needsAttentionPeriods.slice(0, 6).map((p) => {
+              const progressPercent = Math.round((p.received / p.required) * 100);
+              const missing = p.required - p.received;
+              return (
+                <Card key={p.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-base">{p.clientName}</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          {p.year}-{String(p.month).padStart(2, "0")}
+                        </p>
+                      </div>
+                      <Badge variant="secondary">Open</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-medium">{progressPercent}%</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            progressPercent >= 75
+                              ? "bg-emerald-500"
+                              : progressPercent >= 50
+                              ? "bg-orange-500"
+                              : "bg-red-500"
+                          }`}
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Documents</span>
+                      <span>
+                        <span className="font-semibold">{p.received}</span>
+                        <span className="text-muted-foreground">/{p.required}</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-orange-600 dark:text-orange-400">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="font-medium">{missing} missing</span>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Link
+                        href={`/clients/${p.clientId}/periods/${p.id}`}
+                        className="flex-1"
+                      >
+                        <Button variant="default" size="sm" className="w-full gap-2">
+                          <ExternalLink className="h-4 w-4" />
+                          View
+                        </Button>
+                      </Link>
+                      <RequestDocumentsDialog
+                        clientName={p.clientName}
+                        periodName={`${p.year}-${String(p.month).padStart(2, "0")}`}
+                        onSubmit={(requests, message) =>
+                          handleDocumentRequest(
+                            p.id,
+                            p.clientId,
+                            p.clientName,
+                            requests,
+                            message
+                          )
+                        }
+                        trigger={
+                          <Button variant="outline" size="sm" className="gap-2">
+                            <Mail className="h-4 w-4" />
+                            Remind
+                          </Button>
+                        }
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Stats Bar */}
       <div className="mb-6 p-4 md:p-6 rounded-lg border bg-muted/30">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-sm">
@@ -122,48 +307,56 @@ export default function ClientsDashboardPage() {
         </div>
       </div>
 
+      {/* All Periods Table */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold mb-4">
+          All Collections ({filteredPeriods.length})
+        </h2>
+      </div>
+
       <div className="rounded-lg border bg-white dark:bg-background shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full table-fixed min-w-[640px]">
           <thead className="bg-muted/50">
             <tr className="text-sm">
-              <th className="p-3 text-left w-[25%] font-medium">Client</th>
-              <th className="p-3 text-left w-[20%] font-medium">Period</th>
-              <th className="p-3 text-left w-[15%] font-medium">Requests</th>
-              <th className="p-3 text-left w-[15%] font-medium">Docs</th>
-              <th className="p-3 text-left w-[15%] font-medium">Status</th>
-              <th className="p-3 text-left w-[10%] font-medium">Progress</th>
+              <th className="p-3 text-left w-[22%] font-medium">Client</th>
+              <th className="p-3 text-left w-[15%] font-medium">Period</th>
+              <th className="p-3 text-left w-[12%] font-medium">Requests</th>
+              <th className="p-3 text-left w-[10%] font-medium">Docs</th>
+              <th className="p-3 text-left w-[12%] font-medium">Status</th>
+              <th className="p-3 text-left w-[14%] font-medium">Progress</th>
+              <th className="p-3 text-right w-[15%] font-medium">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {loading && dataMode === "live" ? (
               <tr>
-                <td className="p-4 text-muted-foreground text-center" colSpan={6}>
+                <td className="p-4 text-muted-foreground text-center" colSpan={7}>
                   <div className="flex items-center justify-center gap-2">
                     <RefreshCw className="h-4 w-4 animate-spin" />
                     Loading periods…
                   </div>
                 </td>
               </tr>
-            ) : displayPeriods.length === 0 ? (
+            ) : filteredPeriods.length === 0 ? (
               <tr>
                 <td
                   className="p-8 text-muted-foreground text-center"
-                  colSpan={6}
+                  colSpan={7}
                 >
                   <div className="space-y-2">
                     <p className="text-lg font-medium">No periods found</p>
                     <p className="text-sm">
                       {dataMode === "mock"
-                        ? "Mock data is empty"
+                        ? "Try changing the filter"
                         : "Create a period to get started"}
                     </p>
                   </div>
                 </td>
               </tr>
             ) : (
-              displayPeriods.map((p) => {
+              filteredPeriods.map((p) => {
                 const progressPercent = Math.round(
                   (p.received / p.required) * 100
                 );
@@ -230,6 +423,38 @@ export default function ClientsDashboardPage() {
                         <span className="text-xs text-muted-foreground min-w-[3ch]">
                           {progressPercent}%
                         </span>
+                      </div>
+                    </td>
+
+                    <td className="p-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link href={`/clients/${p.clientId}/periods/${p.id}`}>
+                          <Button variant="ghost" size="sm" className="gap-1">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            View
+                          </Button>
+                        </Link>
+                        {p.status === "open" && p.received < p.required && (
+                          <RequestDocumentsDialog
+                            clientName={p.clientName}
+                            periodName={`${p.year}-${String(p.month).padStart(2, "0")}`}
+                            onSubmit={(requests, message) =>
+                              handleDocumentRequest(
+                                p.id,
+                                p.clientId,
+                                p.clientName,
+                                requests,
+                                message
+                              )
+                            }
+                            trigger={
+                              <Button variant="ghost" size="sm" className="gap-1">
+                                <Mail className="h-3.5 w-3.5" />
+                                Remind
+                              </Button>
+                            }
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>
