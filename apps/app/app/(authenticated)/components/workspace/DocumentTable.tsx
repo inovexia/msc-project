@@ -7,22 +7,31 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, CheckCircle2, XCircle, AlertTriangle, Eye } from "lucide-react";
 import { format } from "date-fns";
+
+type DocumentAction = "approve" | "reject" | "flag";
 
 export function DocumentTable({
   documents,
   requests,
   onAssign,
   onSelect,
+  onApprove,
+  onReject,
+  onFlag,
   selectedId,
 }: {
   documents: Document[];
   requests: PeriodRequest[];
   onAssign: (docId: string, requestId: string | null) => void;
   onSelect: (docId: string) => void;
+  onApprove?: (docId: string) => void;
+  onReject?: (docId: string) => void;
+  onFlag?: (docId: string) => void;
   selectedId?: string | null;
 }) {
   return (
@@ -45,11 +54,20 @@ export function DocumentTable({
               (r) => r.id === d.periodRequestId || r.id === (d as any).requestId
             );
             const selected = d.id === selectedId;
-            const status =
-              d.status === "processing"
+
+            // Enhanced status mapping with approval states
+            const approvalStatus = (d as any).approvalStatus || "pending";
+            const displayStatus =
+              approvalStatus === "approved"
+                ? "Approved"
+                : approvalStatus === "rejected"
+                ? "Rejected"
+                : approvalStatus === "flagged"
+                ? "Flagged"
+                : d.status === "processing"
                 ? "Processing"
                 : d.status === "clean"
-                ? "Clean"
+                ? "Review"
                 : d.status === "quarantined"
                 ? "Quarantined"
                 : d.status === "duplicate"
@@ -58,10 +76,14 @@ export function DocumentTable({
                 ? "Failed"
                 : "Uploaded";
 
+            const canApprove = d.status === "clean" && approvalStatus === "pending";
+            const canReject = approvalStatus !== "rejected";
+            const canFlag = approvalStatus !== "flagged";
+
             return (
               <tr
                 key={d.id}
-                className={`text-sm border-t hover:bg-muted/50 ${
+                className={`text-sm border-t hover:bg-muted/50 cursor-pointer ${
                   selected ? "bg-muted/60" : ""
                 }`}
                 onClick={() => onSelect(d.id)}
@@ -75,26 +97,35 @@ export function DocumentTable({
                 </td>
                 <td className="p-2 truncate">
                   {typeof d.extracted?.amount === "number"
-                    ? d.extracted?.amount.toFixed(2)
+                    ? `$${d.extracted?.amount.toFixed(2)}`
                     : "-"}
                 </td>
                 <td className="p-2 truncate">{req?.title ?? "-"}</td>
                 <td className="p-2">
                   <Badge
                     variant={
-                      d.status === "clean"
+                      approvalStatus === "approved"
                         ? "default"
-                        : d.status === "duplicate"
+                        : approvalStatus === "rejected"
+                        ? "destructive"
+                        : approvalStatus === "flagged"
                         ? "outline"
+                        : d.status === "clean"
+                        ? "secondary"
                         : d.status === "quarantined"
                         ? "destructive"
                         : "secondary"
                     }
+                    className={
+                      approvalStatus === "approved"
+                        ? "bg-green-600"
+                        : ""
+                    }
                   >
-                    {status}
+                    {displayStatus}
                   </Badge>
                 </td>
-                <td className="p-2 text-right">
+                <td className="p-2 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -102,6 +133,47 @@ export function DocumentTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {/* Review Actions */}
+                      {canApprove && onApprove && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApprove(d.id);
+                          }}
+                          className="gap-2 text-green-600"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Approve
+                        </DropdownMenuItem>
+                      )}
+                      {canReject && onReject && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onReject(d.id);
+                          }}
+                          className="gap-2 text-red-600"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Reject
+                        </DropdownMenuItem>
+                      )}
+                      {canFlag && onFlag && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onFlag(d.id);
+                          }}
+                          className="gap-2 text-orange-600"
+                        >
+                          <AlertTriangle className="h-4 w-4" />
+                          Flag for Review
+                        </DropdownMenuItem>
+                      )}
+
+                      {(onApprove || onReject || onFlag) && <DropdownMenuSeparator />}
+
+                      {/* Assignment Actions */}
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();

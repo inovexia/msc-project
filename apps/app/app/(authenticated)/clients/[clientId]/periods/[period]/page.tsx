@@ -11,6 +11,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { RefreshCw, Database, Beaker, ArrowLeft, Mail } from "lucide-react";
 import { RequestDocumentsDialog } from "@/app/(authenticated)/accountants/dashboard/components/request-documents-dialog";
+import { DocumentReviewDialog } from "@/app/(authenticated)/components/workspace/DocumentReviewDialog";
 import Link from "next/link";
 
 export default function PeriodWorkspacePage() {
@@ -20,6 +21,7 @@ export default function PeriodWorkspacePage() {
   const [period, setPeriod] = React.useState<Period | null>(null);
   const [client, setClient] = React.useState<Client | null>(null);
   const [selectedDocId, setSelectedDocId] = React.useState<string | null>(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = React.useState(false);
   const [dataMode, setDataMode] = React.useState<"mock" | "live">("mock");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -98,6 +100,131 @@ export default function PeriodWorkspacePage() {
     } catch (err) {
       console.error("Failed to assign document:", err);
     }
+  };
+
+  const onApprove = async (docId: string, note?: string) => {
+    if (dataMode === "mock") {
+      // For mock mode, update locally
+      setDocs((prevDocs) =>
+        prevDocs.map((d) =>
+          d.id === docId ? { ...d, approvalStatus: "approved", approvalNote: note } as any : d
+        )
+      );
+      alert("✓ Document approved successfully!");
+      return;
+    }
+
+    // For live mode, call API
+    try {
+      const response = await fetch(`/api/documents/${docId}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note }),
+      });
+
+      if (!response.ok) throw new Error("Failed to approve document");
+
+      // Refresh documents
+      if (period) {
+        const ds = await listDocuments(period.id);
+        setDocs(ds);
+      }
+
+      alert("✓ Document approved successfully!");
+    } catch (err) {
+      console.error("Failed to approve document:", err);
+      alert("Failed to approve document. Please try again.");
+    }
+  };
+
+  const onReject = async (docId: string, reason: string) => {
+    if (dataMode === "mock") {
+      // For mock mode, update locally
+      setDocs((prevDocs) =>
+        prevDocs.map((d) =>
+          d.id === docId
+            ? { ...d, approvalStatus: "rejected", rejectionReason: reason } as any
+            : d
+        )
+      );
+      alert("Document rejected.");
+      return;
+    }
+
+    // For live mode, call API
+    try {
+      const response = await fetch(`/api/documents/${docId}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+
+      if (!response.ok) throw new Error("Failed to reject document");
+
+      // Refresh documents
+      if (period) {
+        const ds = await listDocuments(period.id);
+        setDocs(ds);
+      }
+
+      alert("Document rejected.");
+    } catch (err) {
+      console.error("Failed to reject document:", err);
+      alert("Failed to reject document. Please try again.");
+    }
+  };
+
+  const onFlag = async (docId: string, note: string) => {
+    if (dataMode === "mock") {
+      // For mock mode, update locally
+      setDocs((prevDocs) =>
+        prevDocs.map((d) =>
+          d.id === docId
+            ? { ...d, approvalStatus: "flagged", flagNote: note } as any
+            : d
+        )
+      );
+      alert("Document flagged for review.");
+      return;
+    }
+
+    // For live mode, call API
+    try {
+      const response = await fetch(`/api/documents/${docId}/flag`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ note }),
+      });
+
+      if (!response.ok) throw new Error("Failed to flag document");
+
+      // Refresh documents
+      if (period) {
+        const ds = await listDocuments(period.id);
+        setDocs(ds);
+      }
+
+      alert("Document flagged for review.");
+    } catch (err) {
+      console.error("Failed to flag document:", err);
+      alert("Failed to flag document. Please try again.");
+    }
+  };
+
+  // Add wrapper to open review dialog
+  const handleApproveWithDialog = (docId: string) => {
+    setSelectedDocId(docId);
+    setReviewDialogOpen(true);
+  };
+
+  const handleRejectWithDialog = (docId: string) => {
+    setSelectedDocId(docId);
+    setReviewDialogOpen(true);
+  };
+
+  const handleFlagWithDialog = (docId: string) => {
+    setSelectedDocId(docId);
+    setReviewDialogOpen(true);
   };
 
   const handleDocumentRequest = async (
@@ -248,7 +375,7 @@ export default function PeriodWorkspacePage() {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-6 text-sm flex-wrap">
           <div>
             <span className="text-muted-foreground">Total Documents:</span>{" "}
             <span className="font-semibold">{docs.length}</span>
@@ -261,15 +388,27 @@ export default function PeriodWorkspacePage() {
             </span>
           </div>
           <div>
-            <span className="text-muted-foreground">Assigned:</span>{" "}
-            <span className="font-semibold">
-              {docs.filter((d) => d.periodRequestId).length}
+            <span className="text-muted-foreground">Approved:</span>{" "}
+            <span className="font-semibold text-green-600">
+              {docs.filter((d) => (d as any).approvalStatus === "approved").length}
             </span>
           </div>
           <div>
-            <span className="text-muted-foreground">Unassigned:</span>{" "}
+            <span className="text-muted-foreground">Needs Review:</span>{" "}
+            <span className="font-semibold text-blue-600">
+              {docs.filter((d) => d.status === "clean" && !(d as any).approvalStatus).length}
+            </span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Flagged:</span>{" "}
             <span className="font-semibold text-orange-600">
-              {docs.filter((d) => !d.periodRequestId && d.status === "clean").length}
+              {docs.filter((d) => (d as any).approvalStatus === "flagged").length}
+            </span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Rejected:</span>{" "}
+            <span className="font-semibold text-red-600">
+              {docs.filter((d) => (d as any).approvalStatus === "rejected").length}
             </span>
           </div>
         </div>
@@ -292,6 +431,9 @@ export default function PeriodWorkspacePage() {
                 documents={docs}
                 requests={requests}
                 onAssign={onAssign}
+                onApprove={handleApproveWithDialog}
+                onReject={handleRejectWithDialog}
+                onFlag={handleFlagWithDialog}
                 onSelect={setSelectedDocId}
                 selectedId={selectedDocId}
               />
@@ -305,6 +447,16 @@ export default function PeriodWorkspacePage() {
           </div>
         </div>
       </div>
+
+      {/* Document Review Dialog */}
+      <DocumentReviewDialog
+        document={docs.find((d) => d.id === selectedDocId) || null}
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+        onApprove={onApprove}
+        onReject={onReject}
+        onFlag={onFlag}
+      />
     </div>
   );
 }
