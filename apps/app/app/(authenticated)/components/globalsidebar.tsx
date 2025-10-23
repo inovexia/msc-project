@@ -24,6 +24,8 @@ import {
   Settings,
   Users,
   Webhook,
+  UploadCloud,
+  Inbox,
   type LucideProps,
 } from "lucide-react";
 import Link from "next/link";
@@ -32,6 +34,7 @@ import type { ComponentType, ReactNode } from "react";
 // 2. Create a map of string names to the actual icon components.
 const iconMap: Record<string, ComponentType<LucideProps>> = {
   LayoutDashboard,
+  Inbox,
   Calendar,
   Files,
   BarChart2,
@@ -39,6 +42,7 @@ const iconMap: Record<string, ComponentType<LucideProps>> = {
   Webhook,
   Users,
   Settings,
+  UploadCloud,
 };
 
 // 3. Update the MenuItem type to accept a string for the icon.
