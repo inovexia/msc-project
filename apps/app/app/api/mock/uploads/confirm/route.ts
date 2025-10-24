@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { insertDocument } from '../../mock/_db';
+import { insertDocument } from '../../_db';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
