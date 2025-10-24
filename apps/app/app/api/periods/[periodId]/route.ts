@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { periodId: string } }
+  { params }: { params: Promise<{ periodId: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { periodId } = params;
+    const { periodId } = await params;
 
     // Get user's firm
     const user = await database.user.findUnique({
