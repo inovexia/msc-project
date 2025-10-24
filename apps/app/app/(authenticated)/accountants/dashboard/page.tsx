@@ -328,35 +328,37 @@ export default function AccountantDashboardPage() {
                   const needsAttention = period.received < period.required;
 
                   return (
-                    <div key={period.id} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium truncate">
-                            {period.clientName}
+                    <Link key={period.id} href={`/clients/${period.clientId}`}>
+                      <div className="space-y-2 hover:bg-muted/50 p-2 -m-2 rounded-lg transition-colors cursor-pointer">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium truncate hover:underline">
+                              {period.clientName}
+                            </span>
+                            {needsAttention && (
+                              <AlertCircle className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {progressPercent}%
                           </span>
-                          {needsAttention && (
-                            <AlertCircle className="h-3.5 w-3.5 text-orange-600 flex-shrink-0" />
-                          )}
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          {progressPercent}%
-                        </span>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              progressPercent >= 100
+                                ? "bg-emerald-500"
+                                : progressPercent >= 75
+                                ? "bg-blue-500"
+                                : progressPercent >= 50
+                                ? "bg-orange-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{ width: `${Math.min(progressPercent, 100)}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${
-                            progressPercent >= 100
-                              ? "bg-emerald-500"
-                              : progressPercent >= 75
-                              ? "bg-blue-500"
-                              : progressPercent >= 50
-                              ? "bg-orange-500"
-                              : "bg-red-500"
-                          }`}
-                          style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                        />
-                      </div>
-                    </div>
+                    </Link>
                   );
                 })}
               <Link href="/clients">

@@ -531,7 +531,12 @@ export default function ClientsDashboardPage() {
                     >
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{p.clientName}</span>
+                          <Link
+                            href={`/clients/${p.clientId}`}
+                            className="font-medium hover:underline hover:text-blue-600 dark:hover:text-blue-400"
+                          >
+                            {p.clientName}
+                          </Link>
                           {needsAttention && (
                             <AlertCircle className="h-4 w-4 text-orange-600 flex-shrink-0" />
                           )}

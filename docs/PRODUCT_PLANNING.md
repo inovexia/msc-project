@@ -455,5 +455,466 @@ Back to Inbox View → Continue processing
 
 ---
 
+## High-Value Feature Additions
+
+After completing the core mock UI implementation, these features represent high-impact enhancements that would significantly improve user experience and product value:
+
+### 1. Notifications Panel
+**Status**: NotificationsTrigger component exists in header but has no content implementation
+
+**Purpose**: Real-time awareness of critical events requiring attention
+
+**Features**:
+- **New Document Uploads**
+  - Push notification when client submits documents
+  - Badge count on header icon
+  - "New" indicator on document list items
+  - Grouped by client for bulk review
+
+- **Documents Needing Review**
+  - Alert for flagged documents requiring manual review
+  - Low OCR confidence warnings
+  - Duplicate detection alerts
+  - Missing information flags
+
+- **Period Management Alerts**
+  - Period approaching deadline (7 days, 3 days, 1 day warnings)
+  - Period incomplete with deadline passed
+  - Client not responding to document requests
+
+- **Client Activity**
+  - Client uploaded requested documents
+  - Client marked all items as submitted
+  - Client responded to rejection feedback
+
+**Implementation Considerations**:
+- WebSocket/SSE for real-time updates
+- Notification persistence (mark as read/unread)
+- Notification preferences (email vs in-app)
+- Grouped notifications to prevent spam
+- Click notification to jump to relevant page/document
+
+**User Value**: Reduces need to manually check for updates, ensures nothing falls through the cracks during busy month-end periods
+
+---
+
+### 2. Document Comments & Notes
+**Purpose**: Communication and context around document processing decisions
+
+**Features**:
+
+**Internal Notes** (Accountant-only):
+- Add private notes to any document
+- Flag specific line items or extracted data
+- Note discrepancies or required follow-ups
+- Tag team members for review
+- Searchable note content
+
+**Client-Facing Rejection Reasons**:
+- When rejecting document, provide structured feedback:
+  - Predefined rejection reasons (poor quality, wrong document, duplicate, etc.)
+  - Custom message field
+  - Request specific information
+  - Upload new version checkbox
+- Client sees rejection reason in their portal
+- Client can respond with clarification or re-upload
+
+**Communication Thread**:
+- Per-document conversation history
+- Accountant <-> Client messages
+- Timestamp and user attribution
+- Email notifications for new messages
+- Resolve/close thread when issue addressed
+
+**Approval with Comments**:
+- Approve document but leave note about anomaly
+- Useful for audit trail
+- Team knowledge sharing
+
+**Implementation Considerations**:
+- Rich text editing for formatting
+- @mentions for team collaboration
+- File attachments to comments
+- Export comments with audit reports
+- Comment templates for common scenarios
+
+**User Value**: Reduces email back-and-forth, centralizes all context in one place, improves audit trail, better client communication
+
+---
+
+### 3. Activity Log & Audit Trail
+**Purpose**: Compliance, troubleshooting, and accountability
+
+**Features**:
+
+**Document-Level Activity**:
+- Status changes (pending → approved → exported)
+- Who approved/rejected and when
+- Data field modifications (manual edits to extracted amounts)
+- Downloads and exports
+- Comments added/edited/deleted
+- Client visibility events (when client viewed status)
+
+**User-Level Activity**:
+- Login/logout events
+- Permission changes
+- Bulk actions performed
+- Filter by user, date range, action type
+
+**System-Level Events**:
+- OCR processing completion
+- Integration sync events (exported to QuickBooks)
+- Webhook triggers
+- Failed operations and retries
+
+**Period-Level Tracking**:
+- Period created/opened
+- Period marked in review
+- Period closed/locked
+- Period reopened and reason
+- Document request sent to client
+- Client responses
+
+**Audit Report Generation**:
+- Export activity logs for specific period
+- Filter by client, user, date range
+- PDF/CSV export formats
+- Compliance-ready formatting
+
+**Implementation Considerations**:
+- Immutable event log (append-only)
+- Efficient storage and querying (time-series DB or partitioned tables)
+- GDPR compliance (anonymization options)
+- Retention policies (keep X years)
+- Real-time streaming vs batch updates
+
+**User Value**: Answers "what happened to this document?", supports compliance audits, identifies process bottlenecks, user accountability
+
+---
+
+### 4. Client Detail View
+**Purpose**: Complete client relationship and history visibility
+
+**Features**:
+
+**Client Overview Dashboard**:
+- All periods (past, current, future) in timeline view
+- Historical performance metrics:
+  - Average documents per period
+  - On-time submission rate
+  - Document quality score (based on OCR confidence)
+  - Most common document types
+  - Submission patterns (early, last-minute, needs reminders)
+
+**All Documents Across Time**:
+- Unified document list across all periods
+- Filter by period, type, status, date
+- Search within client's documents
+- Comparison: "Same month last year" view
+- Download/export all client documents
+
+**Period History**:
+- Past period completion dates
+- Historical document counts
+- Issues encountered and resolutions
+- Notes from previous periods
+
+**Communication History**:
+- All document requests sent
+- All messages exchanged
+- Response times tracked
+- Preferred communication patterns
+
+**Client Metadata**:
+- Contact information
+- Preferred upload method
+- Document submission preferences
+- Special instructions/notes
+- Accounting software integration details
+- Custom fields (industry, fiscal year end, etc.)
+
+**Client Performance Scorecard**:
+- Overall collaboration rating
+- Document quality trends over time
+- Responsiveness metrics
+- Month-end readiness prediction
+
+**Implementation Considerations**:
+- Efficient querying across multiple periods
+- Data aggregation for metrics
+- Visual charts for trends
+- Bulk actions on client documents
+- Export client complete history
+
+**User Value**: Single source of truth for client relationship, identify patterns to improve future months, better client communication with historical context
+
+---
+
+### 5. Bulk Export & Download
+**Purpose**: Move documents from platform to accounting systems or archive
+
+**Features**:
+
+**Bulk Download (ZIP)**:
+- Select multiple documents from inbox or search results
+- Download as organized ZIP file with folder structure:
+  ```
+  ClientName/
+    2024-10/
+      Invoices/
+        invoice-001.pdf
+        invoice-002.pdf
+      Receipts/
+        receipt-001.jpg
+  ```
+- Include metadata CSV with extracted data
+- Preserve original filenames or use standardized naming
+
+**Metadata Export (CSV/Excel)**:
+- Export selected documents with all extracted fields
+- Customizable column selection
+- Include approval status, dates, amounts
+- Use for importing into accounting software that doesn't have direct integration
+
+**Accounting Software Export**:
+- One-click "Export to QuickBooks" from period view
+- Map extracted data to accounting fields
+- Create bills/invoices in accounting system
+- Attach original documents
+- Sync status back to platform
+
+**Batch Operations**:
+- Select all documents in period
+- Select filtered results (e.g., all approved invoices)
+- "Select all" with pagination awareness
+- Preview export before confirming
+
+**Export Templates**:
+- Save export configurations
+- Different templates for different accounting systems
+- Field mapping presets
+- Scheduled exports (e.g., every Friday)
+
+**Implementation Considerations**:
+- Archive generation (streaming ZIP for large batches)
+- API integrations with accounting platforms
+- Field mapping UI for custom exports
+- Export queue for large batches
+- Email notification when export ready
+
+**User Value**: Final step in workflow, move processed documents to where they're needed, backup/archive capabilities, flexible export for various systems
+
+---
+
+### 6. Email Notifications & Reminders
+**Purpose**: Proactive communication to drive client behavior
+
+**Features**:
+
+**Document Request Emails**:
+- When accountant sends document request, client receives email:
+  - Subject: "ABC Accounting needs documents for October 2024"
+  - List of requested documents with checkboxes
+  - Direct link to upload portal (auto-authenticated)
+  - Due date prominently displayed
+  - Branding matches accounting firm
+
+**Reminder Emails**:
+- Automated reminders for missing documents:
+  - 7 days before deadline: Friendly reminder
+  - 3 days before: Urgent reminder
+  - Deadline day: Final notice
+  - After deadline: Overdue alert
+- Customizable reminder schedule
+- Option to snooze reminders for specific clients
+
+**Period Status Updates**:
+- "Your documents have been reviewed" email
+- "Period closed" notification
+- Rejection notifications with reasons
+- Approval confirmations
+
+**Digest Emails for Accountants**:
+- Daily/weekly digest of activity
+- "5 new documents uploaded"
+- "3 clients have complete submissions"
+- "2 periods approaching deadline"
+- Configurable schedule and content
+
+**Client Onboarding Emails**:
+- Welcome email with upload instructions
+- "How to use the portal" guide
+- First document request walkthrough
+
+**Implementation Considerations**:
+- Transactional email service (SendGrid, Mailgun, AWS SES)
+- Email templates with branding customization
+- Unsubscribe options (where appropriate)
+- Email delivery tracking
+- A/B testing for email effectiveness
+- Localization/language support
+
+**User Value**: Reduces manual follow-up work, improves client response rates, keeps everyone informed, drives timely submissions
+
+---
+
+### 7. OCR Confidence Indicators
+**Purpose**: Transparency about data extraction quality
+
+**Features**:
+
+**Confidence Scoring**:
+- Each extracted field gets confidence score (0-100%)
+- Color-coded indicators:
+  - Green (>90%): High confidence
+  - Yellow (70-90%): Medium confidence, review recommended
+  - Red (<70%): Low confidence, manual verification required
+- Overall document quality score
+
+**Field-Level Highlighting**:
+- In document detail view, highlight extracted fields
+- Show confidence score on hover
+- Click to manually edit/verify
+- "Verify all yellow/red fields" workflow
+
+**Quality Flags**:
+- Automatically flag documents with:
+  - Low overall confidence
+  - Critical fields (amount, vendor) with low confidence
+  - Poor image quality
+  - Handwritten content (lower accuracy)
+  - Skewed/rotated images
+
+**Manual Review Queue**:
+- Dedicated view for low-confidence documents
+- Prioritize by impact (high amounts get priority)
+- Side-by-side: OCR result vs original image
+- Quick corrections with keyboard shortcuts
+
+**Confidence Trend Tracking**:
+- Track OCR accuracy over time
+- Identify clients with consistently poor quality
+- Document type with lowest accuracy
+- Use insights to improve process (client education, OCR model tuning)
+
+**Client Quality Feedback**:
+- If client uploads low-quality image, immediate feedback:
+  - "Image quality low, please retake photo"
+  - "Document appears skewed, please straighten"
+  - Tips for better scans/photos
+
+**Implementation Considerations**:
+- OCR APIs return confidence scores
+- Thresholds configurable per field type
+- ML model to predict which fields need review
+- Visual indicators in UI
+- Batch "verify all" workflow
+
+**User Value**: Reduces errors from bad OCR, focuses human review where needed, improves data quality, educates clients on submission quality
+
+---
+
+### 8. Client-Facing Status Portal
+**Purpose**: Self-service transparency for clients
+
+**Features**:
+
+**Document Status Dashboard**:
+- See all submitted documents with status:
+  - ✅ Approved
+  - ⏳ Pending Review
+  - ❌ Rejected (with reason)
+  - 🔄 Processing
+- Filter/search their documents
+- Click to view details and accountant feedback
+
+**Outstanding Items View**:
+- "What you still need to submit" list
+- Requested documents from accountant
+- Missing required documents for period
+- Due dates and urgency indicators
+- "Upload now" button next to each
+
+**Period Completion Progress**:
+- Progress bar: "You're 80% done!"
+- Checklist of required document types
+- Visual indicator of what's missing
+- Comparison: "Same as last month?" to catch missing items
+
+**Submission Confirmation**:
+- Immediate upload confirmation
+- Preview of extracted data: "We read: $1,234.56 from ABC Vendor"
+- Client can flag if extraction wrong
+- Submission receipt/timestamp
+
+**Communication Center**:
+- Messages from accountant
+- Rejection reasons and re-upload instructions
+- Ask questions about requirements
+- Request deadline extension
+
+**Historical Access**:
+- View past periods
+- Download previously submitted documents
+- See approval history
+- "Copy last month" feature to remind them what to submit
+
+**Mobile-Optimized**:
+- Responsive design
+- Photo upload from phone camera
+- Push notifications for requests
+- Quick status check on mobile
+
+**Implementation Considerations**:
+- Separate authentication (client portal login)
+- Read-only access to appropriate data
+- Privacy considerations (clients can't see each other)
+- Email notifications drive back to portal
+- Branding customizable by accounting firm
+
+**User Value**: Reduces "where's my document" questions, empowers clients to self-serve, improves submission rates, builds trust through transparency
+
+---
+
+## Implementation Priority for High-Value Features
+
+### Tier 1: Immediate Impact (Complete within 1-2 sprints)
+1. **Document Comments & Notes** - Critical for daily workflow
+2. **Activity Log** - Needed for compliance and troubleshooting
+3. **Email Notifications** - Drives client behavior
+
+### Tier 2: Quality of Life (Complete within 3-4 sprints)
+4. **Notifications Panel** - Improves awareness
+5. **OCR Confidence Indicators** - Reduces errors
+6. **Bulk Export & Download** - Completes the workflow
+
+### Tier 3: Strategic Value (Complete within 6-8 sprints)
+7. **Client Detail View** - Better relationship management
+8. **Client-Facing Status Portal** - Reduces support burden
+
+---
+
+## Technical Considerations
+
+**Database Schema Updates**:
+- Comments table (document_id, user_id, content, client_visible, created_at)
+- Activity_log table (entity_type, entity_id, action, user_id, metadata, timestamp)
+- Notifications table (user_id, type, read_at, link, content)
+- Client_metadata table (preferences, settings, performance_metrics)
+
+**Performance**:
+- Activity log can grow large - partitioning by date
+- Bulk exports need background jobs
+- Real-time notifications need WebSocket infrastructure
+- OCR confidence requires reprocessing existing documents
+
+**User Permissions**:
+- Internal notes vs client-visible comments
+- Activity log visibility (own actions vs all team actions)
+- Bulk export limits based on plan tier
+- Client portal permissions (view only vs upload)
+
+---
+
 *Document created: October 23, 2025*
-*Last updated: October 23, 2025*
+*Last updated: October 23, 2025 - Added High-Value Feature Additions*
