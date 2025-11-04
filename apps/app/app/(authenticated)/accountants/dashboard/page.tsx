@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -29,12 +35,18 @@ export default function AccountantDashboardPage() {
   // Calculate metrics from mock data
   const metrics = React.useMemo(() => {
     const totalDocs = mockInboxDocuments.length;
-    const pending = mockInboxDocuments.filter((d) => d.approvalStatus === "pending").length;
-    const approved = mockInboxDocuments.filter((d) => d.approvalStatus === "approved").length;
+    const pending = mockInboxDocuments.filter(
+      (d) => d.approvalStatus === "pending"
+    ).length;
+    const approved = mockInboxDocuments.filter(
+      (d) => d.approvalStatus === "approved"
+    ).length;
     const needsReview = mockInboxDocuments.filter(
       (d) => d.status === "needs_review" || d.flags
     ).length;
-    const flagged = mockInboxDocuments.filter((d) => d.approvalStatus === "flagged").length;
+    const flagged = mockInboxDocuments.filter(
+      (d) => d.approvalStatus === "flagged"
+    ).length;
 
     const totalPeriods = mockPeriods.length;
     const openPeriods = mockPeriods.filter((p) => p.status === "open").length;
@@ -58,7 +70,10 @@ export default function AccountantDashboardPage() {
   const recentActivity = React.useMemo(() => {
     return mockInboxDocuments
       .slice()
-      .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+      )
       .slice(0, 5);
   }, []);
 
@@ -109,7 +124,9 @@ export default function AccountantDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Review
+            </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -122,11 +139,15 @@ export default function AccountantDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved Today</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Approved Today
+            </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{metrics.approved}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {metrics.approved}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
               Successfully processed
             </p>
@@ -135,7 +156,9 @@ export default function AccountantDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Needs Attention</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Needs Attention
+            </CardTitle>
             <AlertCircle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -150,7 +173,9 @@ export default function AccountantDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Documents
+            </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -186,7 +211,9 @@ export default function AccountantDashboardPage() {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Needs Review:</span>
-                <Badge variant="destructive">{metrics.needsReview} flagged</Badge>
+                <Badge variant="destructive">
+                  {metrics.needsReview} flagged
+                </Badge>
               </div>
               <Link href="/inbox">
                 <Button className="w-full gap-2 mt-2">
@@ -198,7 +225,7 @@ export default function AccountantDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
+        {/* <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-purple-100 dark:bg-purple-950 rounded-lg">
@@ -230,7 +257,7 @@ export default function AccountantDashboardPage() {
               </Link>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Recent Activity & Quick Stats */}
@@ -256,14 +283,22 @@ export default function AccountantDashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium truncate">{doc.filename}</p>
+                      <p className="text-sm font-medium truncate">
+                        {doc.filename}
+                      </p>
                       {doc.approvalStatus === "approved" && (
-                        <Badge variant="default" className="bg-green-600 text-xs">
+                        <Badge
+                          variant="default"
+                          className="bg-green-600 text-xs"
+                        >
                           Approved
                         </Badge>
                       )}
                       {doc.approvalStatus === "flagged" && (
-                        <Badge variant="outline" className="border-orange-600 text-orange-600 text-xs">
+                        <Badge
+                          variant="outline"
+                          className="border-orange-600 text-orange-600 text-xs"
+                        >
                           Flagged
                         </Badge>
                       )}
@@ -287,7 +322,10 @@ export default function AccountantDashboardPage() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(doc.uploadedAt), "MMM dd, yyyy 'at' h:mm a")}
+                      {format(
+                        new Date(doc.uploadedAt),
+                        "MMM dd, yyyy 'at' h:mm a"
+                      )}
                     </p>
                   </div>
                   <Link href="/inbox">
@@ -308,7 +346,7 @@ export default function AccountantDashboardPage() {
         </Card>
 
         {/* Clients Status */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
@@ -354,7 +392,9 @@ export default function AccountantDashboardPage() {
                                 ? "bg-orange-500"
                                 : "bg-red-500"
                             }`}
-                            style={{ width: `${Math.min(progressPercent, 100)}%` }}
+                            style={{
+                              width: `${Math.min(progressPercent, 100)}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -369,7 +409,7 @@ export default function AccountantDashboardPage() {
               </Link>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );
