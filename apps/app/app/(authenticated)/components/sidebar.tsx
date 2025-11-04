@@ -11,10 +11,11 @@ type SidebarProperties = {
 // Change the 'icon' property from a component to a string name.
 const clientMenuItems = [
   { href: "/", title: "Dashboard", icon: "LayoutDashboard" },
-  { href: "/inbox", title: "Inbox", icon: "Inbox" },
-  { href: "/clients", title: "Document Collections", icon: "Calendar" },
+  { href: "/messages", title: "Messages", icon: "Inbox" },
+  { href: "/mydocuments", title: "Document Collections", icon: "Calendar" },
   { href: "/upload", title: "Upload Portal", icon: "UploadCloud" },
   { href: "/reports", title: "Reports", icon: "BarChart2" },
+  { href: "/payroll", title: "Payroll", icon: "File" },
   { href: "/search", title: "Search", icon: "Search" },
   { href: "/webhooks", title: "Webhooks", icon: "Webhook" },
   { href: "/team", title: "Team", icon: "Users" },
@@ -23,13 +24,14 @@ const clientMenuItems = [
 
 const accountantMenuItems = [
   { href: "/", title: "Dashboard", icon: "LayoutDashboard" },
-  { href: "/inbox", title: "Inbox", icon: "Inbox" },
-  { href: "/accountants/dashboard", title: "Clients", icon: "Users" },
-  { href: "/clients", title: "Document Collections", icon: "Calendar" },
+  { href: "/messages", title: "Messages", icon: "Inbox" },
+  { href: "/mydocuments", title: "Document Collections", icon: "Calendar" },
   { href: "/upload", title: "Upload Portal", icon: "UploadCloud" },
   { href: "/reports", title: "Reports", icon: "BarChart2" },
+  { href: "/payroll", title: "Payroll", icon: "File" },
   { href: "/search", title: "Search", icon: "Search" },
   { href: "/webhooks", title: "Webhooks", icon: "Webhook" },
+  { href: "/team", title: "Team", icon: "Users" },
   { href: "/settings", title: "Settings", icon: "Settings" },
 ];
 

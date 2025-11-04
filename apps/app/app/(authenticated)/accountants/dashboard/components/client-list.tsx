@@ -13,12 +13,10 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Search } from "lucide-react";
 import type { Client } from "../data";
 
-// Defining the component's props with TypeScript.
-// This is the "contract" the component expects from its parent.
 type ClientListProps = {
   clients: Client[];
   selectedClientId: string | null;
-  // This type correctly defines a state-setting function from the useState hook.
+ 
   onSelectClient: React.Dispatch<React.SetStateAction<string | null>>;
 };
 

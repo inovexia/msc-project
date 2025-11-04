@@ -14,7 +14,7 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Label } from "@repo/design-system/components/ui/label";
 
-// The prop types for the modal component.
+
 type RequestDocumentModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -31,11 +31,11 @@ export function RequestDocumentModal({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return; // Don't submit if title is empty
+    if (!title.trim()) return; 
     onSubmit(title, notes);
     setTitle("");
     setNotes("");
-    // No need to call onClose here, the parent's onSubmit handles it.
+    
   };
 
   const handleClose = () => {
