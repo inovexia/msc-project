@@ -30,7 +30,7 @@ const accountantMenuItems = [
   { href: "/reports", title: "Reports", icon: "BarChart2" },
   { href: "/payroll", title: "Payroll", icon: "File" },
 
-  { href: "/team", title: "Team", icon: "Users" },
+  { href: "/teams", title: "Team", icon: "Users" },
   { href: "/settings", title: "Settings", icon: "Settings" },
 ];
 
