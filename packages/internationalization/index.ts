@@ -1,6 +1,6 @@
 import "server-only";
 import type en from "./dictionaries/en.json";
-import languine from "./languine.json" with { type: "json" };
+import languine from "./languine.json" assert { type: "json" };
 
 export const locales = [
   languine.locale.source,

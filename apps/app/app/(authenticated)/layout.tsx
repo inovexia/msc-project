@@ -26,7 +26,7 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
   }
 
   return (
-    <NotificationsProvider userId={user.id}>
+    <NotificationsProvider userId={user.id} theme="light">
       <SidebarProvider>
         <Sidebar>
           {betaFeature && (
