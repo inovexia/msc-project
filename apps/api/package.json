@@ -26,7 +26,9 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "svix": "^1.80.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "import-in-the-middle": "2.0.0",
+    "require-in-the-middle": "7.5.2"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
