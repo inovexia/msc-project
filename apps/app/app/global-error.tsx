@@ -1,29 +1,36 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { fonts } from "@repo/design-system/lib/fonts";
-import { captureException } from "@sentry/nextjs";
-import type NextError from "next/error";
-import { useEffect } from "react";
-
-type GlobalErrorProperties = {
-  readonly error: NextError & { digest?: string };
-  readonly reset: () => void;
-};
-
-const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
-  useEffect(() => {
-    captureException(error);
-  }, [error]);
-
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
-    <html className={fonts} lang="en">
+    <html>
       <body>
-        <h1>Oops, something went wrong</h1>
-        <Button onClick={() => reset()}>Try again</Button>
+        <div style={{ padding: "40px", fontFamily: "system-ui" }}>
+          <h1 style={{ color: "#dc2626" }}>Application Error</h1>
+          <p style={{ color: "#64748b" }}>
+            Something went wrong. Please try again.
+          </p>
+          <button
+            onClick={() => reset()}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              background: "#3b82f6",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            Try again
+          </button>
+        </div>
       </body>
     </html>
   );
-};
-
-export default GlobalError;
+}
