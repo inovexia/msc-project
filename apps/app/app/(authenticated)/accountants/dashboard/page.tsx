@@ -29,6 +29,8 @@ import { format } from "date-fns";
 import { mockInboxDocuments } from "@/lib/mock-inbox-documents";
 import { mockPeriods } from "@/lib/mock-periods";
 
+export const dynamic = "force-dynamic";
+
 export default function AccountantDashboardPage() {
   const [dataMode, setDataMode] = React.useState<"mock" | "live">("mock");
 
